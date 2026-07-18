@@ -4,8 +4,9 @@ RakshaLink API - Incident Schemas
 Request and response schemas for incident-related endpoints.
 """
 
-from typing import Any, Optional
-from pydantic import BaseModel
+from typing import Any, Optional, Dict, List
+from pydantic import BaseModel, Field
+from datetime import datetime
 
 
 # ── Nested helpers ───────────────────────────────────────────────────────────
@@ -79,3 +80,21 @@ class IncidentResponse(BaseModel):
     duplicateOf: Optional[str] = None
     duplicateConfidence: Optional[float] = None
     duplicateReason: Optional[str] = None
+
+
+class MatchVolunteerSchema(BaseModel):
+    """Schema for a matched volunteer."""
+    volunteerId: str
+    name: str
+    distanceKm: float
+    matchingSkills: List[str]
+    score: float
+
+
+class IncidentMatchResponse(BaseModel):
+    """Schema for the incident matching endpoint."""
+    incidentId: str
+    category: str
+    priority: str
+    recommendedResources: List[str]
+    recommendedVolunteers: List[MatchVolunteerSchema]

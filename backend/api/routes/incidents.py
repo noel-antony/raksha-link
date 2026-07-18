@@ -8,7 +8,7 @@ Routes are kept thin — all Firestore logic lives in services/firebase.py.
 from fastapi import APIRouter, HTTPException
 from typing import List
 
-from api.schemas.incident import IncidentCreate, IncidentUpdate, IncidentResponse
+from api.schemas.incident import IncidentCreate, IncidentUpdate, IncidentResponse, IncidentMatchResponse
 from api.services.firebase import (
     create_incident,
     get_incident,
@@ -18,6 +18,7 @@ from api.services.firebase import (
 )
 from api.services.gemini import gemini_service
 from api.services.duplicate import detect_duplicate
+from api.services.matching import get_incident_matches
 from api.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -112,6 +113,21 @@ async def get_incident_endpoint(incident_id: str) -> dict:
         raise HTTPException(status_code=404, detail="Incident not found.")
 
     return incident
+
+
+@router.get("/{incident_id}/matches", response_model=IncidentMatchResponse)
+async def get_incident_matches_endpoint(incident_id: str) -> dict:
+    """Return a ranked list of recommended volunteers for the incident."""
+    try:
+        matches = get_incident_matches(incident_id)
+    except Exception as exc:
+        logger.error("Error matching volunteers for incident %s: %s", incident_id, exc)
+        raise HTTPException(status_code=500, detail="Failed to match volunteers.") from exc
+        
+    if matches is None:
+        raise HTTPException(status_code=404, detail="Incident not found.")
+        
+    return matches
 
 
 @router.patch("/{incident_id}", response_model=IncidentResponse)

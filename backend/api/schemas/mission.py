@@ -1,31 +1,39 @@
-"""
-RakshaLink API - Mission Schemas
-
-Request and response schemas for mission-related endpoints.
-"""
-
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel
+from api.models.mission import MissionStatus, AssignmentStatus
+
+class AssignmentSchema(BaseModel):
+    volunteerId: str
+    name: str
+    role: str
+    assignedAt: str
+    status: AssignmentStatus
 
 
-class MissionCreateRequest(BaseModel):
-    """Schema for dispatching a new mission."""
+class MissionCreate(BaseModel):
+    incidentId: str
+    title: str
+    description: str
+    selectedVolunteerIds: List[str]
 
-    crisis_id: str
-    volunteer_id: str
-    assigned_task: Optional[str] = None
 
-
-class MissionStatusUpdateRequest(BaseModel):
-    """Schema for updating a mission's status."""
-
-    status: str
+class MissionUpdate(BaseModel):
+    status: Optional[MissionStatus] = None
+    notes: Optional[str] = None
+    assignedVolunteers: Optional[List[AssignmentSchema]] = None
 
 
 class MissionResponse(BaseModel):
-    """Schema for returning mission data to the client."""
-
     id: str
-    crisis_id: str
-    volunteer_id: str
-    status: str
+    incidentId: str
+    title: str
+    description: str
+    priority: str
+    status: MissionStatus
+    assignedVolunteers: List[AssignmentSchema]
+    createdBy: str
+    createdAt: str
+    updatedAt: str
+    startedAt: Optional[str] = None
+    completedAt: Optional[str] = None
+    notes: Optional[str] = None
