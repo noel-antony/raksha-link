@@ -17,8 +17,13 @@ backend/**/*.pyd
 backend/.Python
 backend/env/
 backend/venv/
+backend/.env
 backend/.venv/
 backend/api/__pycache__/
+backend/credentials/
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
 test_output.txt
 
 # OS / Environment
