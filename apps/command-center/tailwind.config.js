@@ -4,44 +4,50 @@ export default {
   theme: {
     extend: {
       colors: {
+        background: '#F7FAF8',
+        card: '#FFFFFF',
         primary: {
-          50: '#e6f4f1',
-          100: '#b3ddd6',
-          500: '#0d7a6b',
-          600: '#0a6558',
-          700: '#084f45',
-          900: '#042e27',
+          DEFAULT: '#0F766E',
+          50: '#F0FDFA',
+          100: '#CCFBF1',
+          500: '#14B8A6',
+          600: '#0D9488',
+          700: '#0F766E', // Target primary
+          900: '#134E4A',
         },
-        crisis: {
-          red: '#dc2626',
-          amber: '#d97706',
-          yellow: '#ca8a04',
-          green: '#16a34a',
+        secondary: {
+          DEFAULT: '#1E3A5F',
+          100: '#E2E8F0',
+          500: '#64748B',
+          700: '#1E3A5F',
+          900: '#0F172A',
         },
-        navy: '#0f2744',
-        slate: '#1e3a5f',
+        accent: {
+          DEFAULT: '#84CC16', // lime-500
+          100: '#ECFCCB',
+          700: '#4D7C0F',
+        },
+        danger: {
+          DEFAULT: '#DC2626',
+          100: '#FEE2E2',
+        },
+        warning: {
+          DEFAULT: '#D97706',
+          100: '#FEF3C7',
+        },
+        border: '#DCE7E3',
       },
       borderRadius: {
-        xl: '12px',
+        xl: '16px',
+        '2xl': '24px',
       },
       boxShadow: {
-        card: '0 12px 28px rgba(15, 39, 68, 0.08)',
+        card: '0 4px 20px rgba(30, 58, 95, 0.05)',
+        elevated: '0 10px 40px rgba(30, 58, 95, 0.1)',
       },
       fontFamily: {
         heading: ['Sora', 'sans-serif'],
         body: ['DM Sans', 'sans-serif'],
-      },
-      transitionTimingFunction: {
-        smooth: 'ease',
-      },
-      animation: {
-        float: 'float 6s ease-in-out infinite',
-      },
-      keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-8px)' },
-        },
       },
     },
   },

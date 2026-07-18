@@ -1,60 +1,30 @@
-import { Menu, ShieldCheck, X, LogOut } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import Badge from '../UI/Badge';
-import { MOCK_CRISIS_EVENTS } from '../../config/mockData';
-import { useAuth } from '../../contexts/AuthContext';
-import { logoutUser } from '../../services/firebaseService';
-import { useToast } from '../../hooks/useToast';
+import { Menu, ShieldCheck, X } from 'lucide-react';
+import { useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import Button from '../UI/Button';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
-  const { currentUser, isAdmin, isVolunteer } = useAuth();
-  const { showToast } = useToast();
-  const hasLiveCrisis = useMemo(() => MOCK_CRISIS_EVENTS.some((event) => event.status === 'active'), []);
 
-  const links = useMemo(() => {
-    const baseLinks = [{ label: 'Home', to: '/' }];
-    
-    if (!currentUser) {
-      baseLinks.push({ label: 'Register', to: '/register' });
-      baseLinks.push({ label: 'Login', to: '/login' });
-    } else {
-      if (isAdmin) {
-        baseLinks.push({ label: 'Dashboard', to: '/dashboard' });
-        baseLinks.push({ label: 'Manage Admins', to: '/manage-admins' });
-      }
-      if (isVolunteer) {
-        baseLinks.push({ label: 'Profile', to: '/profile' });
-      }
-      baseLinks.push({ label: 'Missions', to: '/missions' });
-    }
-    
-    return baseLinks;
-  }, [currentUser, isAdmin, isVolunteer]);
-
-  const handleLogout = async () => {
-    try {
-      await logoutUser();
-      showToast('Logged out successfully', 'success');
-      navigate('/');
-    } catch (error) {
-      showToast('Logout failed', 'error');
-    }
-  };
+  const links = [
+    { label: 'Home', to: '/' },
+    { label: 'Incidents', to: '/incidents' },
+    { label: 'Volunteers', to: '/volunteers' },
+    { label: 'Missions', to: '/missions' },
+    { label: 'Dashboard', to: '/dashboard' },
+  ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-navy/10 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur shadow-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-navy text-white shadow-card">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-white shadow-card">
             <ShieldCheck className="h-6 w-6" />
           </div>
           <div>
-            <p className="font-heading text-lg font-bold text-navy">SentinelOS</p>
-            <p className="text-xs text-slate-500">Community Crisis Response</p>
+            <p className="font-heading text-lg font-bold text-secondary">RakshaLink</p>
+            <p className="text-xs text-secondary-500">Disaster Response Platform</p>
           </div>
         </Link>
 
@@ -64,31 +34,22 @@ export default function Navbar() {
               key={link.to}
               to={link.to}
               className={({ isActive }) =>
-                `text-sm font-medium ${isActive ? 'text-primary-600' : 'text-slate-600 hover:text-navy'}`
+                `text-sm font-medium transition-colors ${isActive ? 'text-primary-600' : 'text-secondary-500 hover:text-secondary-900'}`
               }
             >
               {link.label}
             </NavLink>
           ))}
-          {currentUser && (
-            <button 
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-red-600"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </button>
-          )}
-          {hasLiveCrisis && (
-            <Badge color="red" className="animate-pulse">
-              LIVE
-            </Badge>
-          )}
+          <Link to="/dashboard">
+            <Button size="sm" variant="secondary" className="ml-4">
+              Coordinator Login
+            </Button>
+          </Link>
         </nav>
 
         <button
           type="button"
-          className="rounded-xl border border-slate-200 p-2 md:hidden"
+          className="rounded-xl border border-border p-2 md:hidden"
           onClick={() => setOpen((current) => !current)}
           aria-label="Toggle navigation menu"
         >
@@ -97,7 +58,7 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <div className="border-t border-slate-100 bg-white md:hidden">
+        <div className="border-t border-border bg-card md:hidden">
           <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-4 sm:px-6">
             {links.map((link) => (
               <Link
@@ -105,30 +66,17 @@ export default function Navbar() {
                 to={link.to}
                 onClick={() => setOpen(false)}
                 className={`rounded-xl px-3 py-2 text-sm font-medium ${
-                  location.pathname === link.to ? 'bg-primary-50 text-primary-700' : 'text-slate-600'
+                  location.pathname === link.to ? 'bg-primary-50 text-primary-700' : 'text-secondary-500'
                 }`}
               >
                 {link.label}
               </Link>
             ))}
-            {currentUser && (
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  handleLogout();
-                }}
-                className="rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-600 hover:text-red-600"
-              >
-                Logout
-              </button>
-            )}
-            {hasLiveCrisis && (
-              <div>
-                <Badge color="red" className="animate-pulse">
-                  LIVE
-                </Badge>
-              </div>
-            )}
+            <Link to="/dashboard" onClick={() => setOpen(false)} className="mt-2">
+              <Button size="sm" variant="secondary" className="w-full">
+                Coordinator Login
+              </Button>
+            </Link>
           </div>
         </div>
       )}

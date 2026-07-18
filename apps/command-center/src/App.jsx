@@ -3,60 +3,28 @@ import Navbar from './components/Layout/Navbar';
 import Home from './pages/Home';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import Matching from './pages/Matching';
-import MissionTracker from './pages/MissionTracker';
-import Login from './pages/Login';
-import Profile from './pages/Profile';
-import AdminSetup from './pages/AdminSetup';
-import ManageAdmins from './pages/ManageAdmins';
+import Incidents from './pages/Incidents';
+import IncidentDetails from './pages/IncidentDetails';
+import VolunteerDirectory from './pages/VolunteerDirectory';
+import MissionManagement from './pages/MissionManagement';
 import { ToastProvider } from './hooks/useToast';
 import { AuthProvider } from './contexts/AuthContext';
-import ProtectedRoute from './components/Layout/ProtectedRoute';
 
 export default function App() {
   return (
     <ToastProvider>
       <AuthProvider>
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <div className="min-h-screen bg-slate-50 text-slate-800">
+          <div className="min-h-screen bg-background text-secondary-900">
             <Navbar />
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/incidents" element={<Incidents />} />
+              <Route path="/incidents/:id" element={<IncidentDetails />} />
+              <Route path="/volunteers" element={<VolunteerDirectory />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/setup-admin" element={<AdminSetup />} />
-              
-              {/* Admin Routes */}
-              <Route path="/dashboard" element={
-                <ProtectedRoute requireAdmin>
-                  <Dashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/manage-admins" element={
-                <ProtectedRoute requireAdmin>
-                  <ManageAdmins />
-                </ProtectedRoute>
-              } />
-              
-              {/* Common protected routes or specific role routes */}
-              <Route path="/matching" element={
-                <ProtectedRoute>
-                  <Matching />
-                </ProtectedRoute>
-              } />
-              <Route path="/missions" element={
-                <ProtectedRoute>
-                  <MissionTracker />
-                </ProtectedRoute>
-              } />
-              
-              {/* Volunteer Routes */}
-              <Route path="/profile" element={
-                <ProtectedRoute requireVolunteer>
-                  <Profile />
-                </ProtectedRoute>
-              } />
-
+              <Route path="/missions" element={<MissionManagement />} />
             </Routes>
           </div>
         </BrowserRouter>

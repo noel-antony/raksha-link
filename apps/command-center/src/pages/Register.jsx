@@ -2,17 +2,14 @@ import { CheckCircle2, KeyRound, MapPin, Shield, UserRound } from 'lucide-react'
 import { useMemo, useState } from 'react';
 import Button from '../components/UI/Button';
 import { useToast } from '../hooks/useToast';
-import { encryptData, deriveEncryptionKey } from '../services/encryptionService';
-import { saveVolunteer, registerUser } from '../services/firebaseService';
+import { api } from '../services/api';
 
 const skillOptions = ['Doctor', 'Nurse', 'Electrician', 'Swimmer', 'Driver', 'Translator', 'First Aid', 'Construction'];
 const assetOptions = ['Boat', 'Generator', '4x4 Vehicle', 'First Aid Kit', 'Chainsaw', 'Rope & Rescue Gear'];
 const languageOptions = ['Malayalam', 'Tamil', 'English', 'Hindi', 'Kannada'];
 
 const initialForm = {
-  name: '',
-  email: '',
-  password: '',
+  fullName: '',
   phone: '',
   livesInKerala: true,
   skills: [],
@@ -30,7 +27,7 @@ function ToggleChip({ active, label, onClick }) {
       className={`rounded-full border px-4 py-2 text-sm font-medium ${
         active
           ? 'border-primary-500 bg-primary-500 text-white shadow-sm'
-          : 'border-slate-200 bg-white text-slate-600 hover:border-primary-200 hover:text-primary-700'
+          : 'border-border bg-white text-secondary-500 hover:border-primary-200 hover:text-primary-700'
       }`}
     >
       {label}
@@ -47,10 +44,9 @@ export default function Register() {
   const { showToast } = useToast();
 
   const maskedVolunteerId = useMemo(() => {
-    if (!volunteerId) {
-      return '';
-    }
-    return `V-${volunteerId.slice(-8, -4).toUpperCase()}-${volunteerId.slice(-4).toUpperCase()}`;
+    if (!volunteerId) return '';
+    const str = String(volunteerId);
+    return `V-${str.slice(0, 4).toUpperCase()}-${str.slice(-4).toUpperCase()}`;
   }, [volunteerId]);
 
   const updateArrayField = (field, value) => {
@@ -67,20 +63,14 @@ export default function Register() {
     const nextErrors = {};
 
     if (targetStep === 1) {
-      if (!form.name.trim()) {
-        nextErrors.name = 'Name is required.';
-      }
-      if (!form.email.trim() || !form.email.includes('@')) {
-        nextErrors.email = 'Valid email is required.';
-      }
-      if (form.password.length < 6) {
-        nextErrors.password = 'Password must be at least 6 characters.';
+      if (!form.fullName.trim()) {
+        nextErrors.fullName = 'Name is required.';
       }
       if (!/^[6-9]\d{9}$/.test(form.phone)) {
         nextErrors.phone = 'Enter a valid 10-digit Indian mobile number.';
       }
       if (!form.livesInKerala) {
-        nextErrors.livesInKerala = 'SentinelOS currently serves Kerala only.';
+        nextErrors.livesInKerala = 'RakshaLink currently serves Kerala only.';
       }
     }
 
@@ -121,7 +111,7 @@ export default function Register() {
           ...current,
           location: {
             lat: position.coords.latitude,
-            lng: position.coords.longitude,
+            lon: position.coords.longitude,
           },
         }));
         setErrors((current) => ({ ...current, location: '' }));
@@ -135,74 +125,24 @@ export default function Register() {
   };
 
   const handleSubmit = async () => {
-    const personalValid = validateStep(1);
-    if (!personalValid) {
-      setStep(1);
-      return;
-    }
-
-    const skillsValid = validateStep(2);
-    if (!skillsValid) {
-      setStep(2);
-      return;
-    }
-
-    const privacyValid = validateStep(3);
-    if (!privacyValid) {
-      setStep(3);
+    if (!validateStep(1) || !validateStep(2) || !validateStep(3)) {
       return;
     }
 
     setSubmitting(true);
     try {
-      const authUser = await registerUser(form.email, form.password, 'volunteer', {
-        name: form.name.trim(),
+      const payload = {
+        fullName: form.fullName.trim(),
         phone: form.phone,
-      });
-
-      const generatedId = authUser.uid;
-      const phoneWithCode = `+91${form.phone}`;
-      const key = deriveEncryptionKey(phoneWithCode);
-      const profile = {
-        id: generatedId,
-        name: form.name.trim(),
-        phone: phoneWithCode,
         skills: form.skills,
-        assets: form.assets,
         languages: form.languages,
-        lat: form.location.lat,
-        lng: form.location.lng,
-        available: true,
-        breakGlassLocked: form.privacyEnabled,
-        registeredAt: new Date().toISOString().split('T')[0],
+        assets: form.assets,
+        location: form.location,
+        livesInKerala: form.livesInKerala,
       };
-      const encryptedPayload = encryptData(profile, key);
 
-      if (!encryptedPayload) {
-        throw new Error('Unable to secure your registration data.');
-      }
-
-      await saveVolunteer({
-        id: generatedId,
-        encryptedPayload,
-        profile: {
-          id: generatedId,
-          name: profile.name,
-          skills: profile.skills,
-          assets: profile.assets,
-          languages: profile.languages,
-          lat: profile.lat,
-          lng: profile.lng,
-          available: true,
-          breakGlassLocked: form.privacyEnabled,
-          registeredAt: profile.registeredAt,
-        },
-        phone: phoneWithCode,
-        breakGlassLocked: form.privacyEnabled,
-        createdAt: new Date().toISOString(),
-      });
-
-      setVolunteerId(generatedId);
+      const res = await api.createVolunteer(payload);
+      setVolunteerId(res.id || 'NEW');
       setStep(4);
       showToast('Responder registration completed successfully.', 'success');
     } catch (error) {
@@ -261,46 +201,24 @@ export default function Register() {
           {step === 1 && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-2xl font-bold text-navy">Personal Info</h2>
-                <p className="mt-2 text-slate-500">Tell us how to identify you as a local community responder.</p>
+                <h2 className="text-2xl font-bold text-secondary-900">Personal Info</h2>
+                <p className="mt-2 text-secondary-500">Tell us how to identify you as a local community responder.</p>
               </div>
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-slate-700">Name</span>
+                <span className="mb-2 block text-sm font-medium text-secondary-700">Full Name</span>
                 <input
                   type="text"
-                  value={form.name}
-                  onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-primary-300 focus:outline-none"
+                  value={form.fullName}
+                  onChange={(event) => setForm((current) => ({ ...current, fullName: event.target.value }))}
+                  className="w-full rounded-2xl border border-border px-4 py-3 focus:border-primary-300 focus:outline-none"
                   placeholder="Enter your full name"
                 />
-                {errors.name && <p className="mt-2 text-sm text-red-600">{errors.name}</p>}
+                {errors.fullName && <p className="mt-2 text-sm text-danger">{errors.fullName}</p>}
               </label>
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-slate-700">Email</span>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-primary-300 focus:outline-none"
-                  placeholder="Enter your email"
-                />
-                {errors.email && <p className="mt-2 text-sm text-red-600">{errors.email}</p>}
-              </label>
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-slate-700">Password</span>
-                <input
-                  type="password"
-                  value={form.password}
-                  onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-primary-300 focus:outline-none"
-                  placeholder="••••••••"
-                />
-                {errors.password && <p className="mt-2 text-sm text-red-600">{errors.password}</p>}
-              </label>
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-slate-700">Phone</span>
-                <div className="flex overflow-hidden rounded-2xl border border-slate-200">
-                  <span className="flex items-center bg-slate-50 px-4 text-slate-500">+91</span>
+                <span className="mb-2 block text-sm font-medium text-secondary-700">Phone</span>
+                <div className="flex overflow-hidden rounded-2xl border border-border">
+                  <span className="flex items-center bg-background px-4 text-secondary-500">+91</span>
                   <input
                     type="tel"
                     value={form.phone}
@@ -310,7 +228,7 @@ export default function Register() {
                     maxLength={10}
                   />
                 </div>
-                {errors.phone && <p className="mt-2 text-sm text-red-600">{errors.phone}</p>}
+                {errors.phone && <p className="mt-2 text-sm text-danger">{errors.phone}</p>}
               </label>
               <div>
                 <span className="mb-3 block text-sm font-medium text-slate-700">Live in Kerala?</span>
