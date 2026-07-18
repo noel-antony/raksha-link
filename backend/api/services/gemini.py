@@ -76,4 +76,56 @@ class GeminiService:
             logger.error("Gemini API error: %s", e)
             raise
 
+    async def compare_incidents(self, incident_a: dict, incident_b: dict) -> dict:
+        """Compare two incidents and determine if they refer to the same event.
+
+        Returns a dictionary with duplicate, confidence, and reason.
+        """
+        from api.services.prompts import DUPLICATE_DETECTION_PROMPT
+        
+        prompt = DUPLICATE_DETECTION_PROMPT.format(
+            title_a=incident_a.get("title", ""),
+            desc_a=incident_a.get("description", ""),
+            title_b=incident_b.get("title", ""),
+            desc_b=incident_b.get("description", "")
+        )
+        
+        try:
+            model = genai.GenerativeModel('gemini-flash-latest')
+            response = model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.1,
+                )
+            )
+            
+            raw_text = response.text
+            if not raw_text:
+                raise ValueError("Gemini returned empty response for duplicate detection.")
+                
+            cleaned_text = raw_text.strip()
+            if cleaned_text.startswith("```json"):
+                cleaned_text = cleaned_text[7:]
+            if cleaned_text.startswith("```"):
+                cleaned_text = cleaned_text[3:]
+            if cleaned_text.endswith("```"):
+                cleaned_text = cleaned_text[:-3]
+            cleaned_text = cleaned_text.strip()
+
+            data = json.loads(cleaned_text)
+            
+            # Basic validation
+            required_keys = {"duplicate", "confidence", "reason"}
+            if not required_keys.issubset(data.keys()):
+                raise ValueError(f"Missing required keys in duplicate response: {data.keys()}")
+                
+            return data
+            
+        except json.JSONDecodeError as e:
+            logger.error("Failed to parse duplicate detection JSON: %s. Raw text: %s", e, raw_text)
+            raise ValueError("Gemini did not return valid JSON.") from e
+        except Exception as e:
+            logger.error("Gemini duplicate detection API error: %s", e)
+            raise
+
 gemini_service = GeminiService()

@@ -100,6 +100,9 @@ async def create_incident(data: dict[str, Any]) -> dict[str, Any]:
         "updatedAt": now,
         "imageUrl": data.get("imageUrl", ""),
         "aiAnalysis": None,
+        "duplicateOf": None,
+        "duplicateConfidence": None,
+        "duplicateReason": None,
     }
 
     doc_ref = db.collection(INCIDENTS_COLLECTION).document()

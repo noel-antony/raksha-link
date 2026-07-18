@@ -54,6 +54,9 @@ class IncidentUpdate(BaseModel):
     status: Optional[str] = None
     location: Optional[LocationSchema] = None
     imageUrl: Optional[str] = None
+    duplicateOf: Optional[str] = None
+    duplicateConfidence: Optional[float] = None
+    duplicateReason: Optional[str] = None
 
 
 # ── Response schemas ─────────────────────────────────────────────────────────
@@ -73,3 +76,6 @@ class IncidentResponse(BaseModel):
     updatedAt: Optional[str] = None
     imageUrl: Optional[str] = None
     aiAnalysis: Optional[AIAnalysisSchema] = None
+    duplicateOf: Optional[str] = None
+    duplicateConfidence: Optional[float] = None
+    duplicateReason: Optional[str] = None

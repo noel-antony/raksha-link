@@ -17,6 +17,7 @@ from api.services.firebase import (
     delete_incident,
 )
 from api.services.gemini import gemini_service
+from api.services.duplicate import detect_duplicate
 from api.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -73,6 +74,17 @@ async def create_incident_endpoint(payload: IncidentCreate) -> dict:
         # We catch all exceptions here to ensure the endpoint still returns 201 
         # with the unanalyzed incident data, maintaining critical platform availability.
         logger.error("AI analysis failed for incident %s: %s", incident_id, exc)
+
+    # Attempt Duplicate Detection
+    try:
+        dup_result = await detect_duplicate(result)
+        if dup_result:
+            updated_result = await update_incident(incident_id, dup_result)
+            if updated_result:
+                result = updated_result
+                logger.info("Duplicate detection completed and saved for incident %s", incident_id)
+    except Exception as exc:
+        logger.error("Duplicate detection failed for incident %s: %s", incident_id, exc)
 
     return result
 

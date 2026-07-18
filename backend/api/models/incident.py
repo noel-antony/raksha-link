@@ -38,3 +38,6 @@ class Incident(BaseModel):
     updatedAt: Optional[str] = None
     imageUrl: Optional[str] = ""
     aiAnalysis: Optional[AIAnalysis] = None
+    duplicateOf: Optional[str] = None
+    duplicateConfidence: Optional[float] = None
+    duplicateReason: Optional[str] = None
