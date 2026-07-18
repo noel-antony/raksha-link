@@ -1,5 +1,4 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { callGroq } from './groqService';
 
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey || 'demo-key');
@@ -17,7 +16,6 @@ function isGeminiConfigured() {
  * Unified AI Caller with Hybrid Fallback (Gemini -> Groq -> Mock)
  */
 async function callAI(prompt, systemPrompt = 'You are an emergency coordinator AI for SentinelOS.') {
-  // 1. Try Gemini first (if configured and not currently rate limited)
   if (isGeminiConfigured() && Date.now() > geminiRateLimitedUntil) {
     for (const modelName of GEMINI_MODELS) {
       try {
@@ -28,26 +26,15 @@ async function callAI(prompt, systemPrompt = 'You are an emergency coordinator A
         const errorMsg = error.message?.toLowerCase() || '';
         if (errorMsg.includes('429') || errorMsg.includes('quota') || errorMsg.includes('limit')) {
           console.warn(`Gemini Quota hit for ${modelName}.`);
-          // If we hit a hard 429 on one model, the whole API key is usually throttled.
-          // We trip the circuit breaker for 60 seconds to avoid spamming 429s.
           geminiRateLimitedUntil = Date.now() + 60000;
-          break; // Exit the loop and go straight to Groq
+          throw error; // No fallback
         }
         console.error(`Gemini Error (${modelName}):`, error.message);
       }
     }
   }
 
-  // 2. Try Groq as secondary high-performance fallback
-  try {
-    console.info('Attempting Groq fallback...');
-    const result = await callGroq(prompt, systemPrompt);
-    return { ...result, provider: 'groq' };
-  } catch (error) {
-    console.warn('Groq Fallback failed:', error.message);
-  }
-
-  throw new Error('All AI providers exhausted');
+  throw new Error('All AI providers exhausted or not configured');
 }
 
 export async function getVolunteerMatches(crisisType, location, volunteers) {

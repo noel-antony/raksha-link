@@ -11,7 +11,28 @@ import { useToast } from '../hooks/useToast';
 import { getVolunteersWithDistance } from '../utils/distance';
 import { hashVolunteerId } from '../utils/hashUtils';
 import { getVolunteers, logBreakGlassAccess, saveMission } from '../services/firebaseService';
-import { generateMultilingualBrief, sendWhatsApp } from '../services/whatsappService';
+import { translateMissionBrief } from '../services/geminiService';
+
+const sendWhatsApp = async (phone, message) => {
+  console.log(`Mock dispatch to ${phone}: ${message}`);
+  return { success: true };
+};
+
+const generateMultilingualBrief = async (volunteer, crisis, assignedTask, coordinatorName) => {
+  const preferredLang = (volunteer.languages || []).find(l => ['Malayalam', 'Tamil', 'Hindi'].includes(l)) || 'English';
+  const englishBrief = `EMERGENCY ALERT\n${crisis.type} at ${crisis.location}.\nAssigned Task: ${assignedTask}\n- ${coordinatorName}`;
+  
+  if (preferredLang === 'English') {
+    return { finalBrief: englishBrief, language: 'English', method: 'passthrough' };
+  }
+  
+  const result = await translateMissionBrief(englishBrief, preferredLang);
+  return {
+    finalBrief: `${result.translated}\n\n[Original: ${englishBrief}]`,
+    language: result.language,
+    method: result.method
+  };
+};
 import { enrichVolunteersWithRoutes } from '../services/routingService';
 
 const loadingSteps = [

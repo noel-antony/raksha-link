@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { db } from '../config/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { getVolunteers } from '../services/firebaseService';
-import { updateVolunteerHeartbeat, syncFLWeights } from '../services/prototypeService';
+import { updateVolunteerHeartbeat } from '../services/prototypeService';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
 
 export default function Profile() {
@@ -11,8 +11,6 @@ export default function Profile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isActive, setIsActive] = useState(false);
-  const [isTraining, setIsTraining] = useState(false);
-  const [trainingSamples, setTrainingSamples] = useState(0);
 
   useEffect(() => {
     async function loadProfile() {
@@ -72,25 +70,6 @@ export default function Profile() {
     };
   }, [isActive, currentUser, profile]);
 
-  // Federated Learning Edge Training Simulator
-  useEffect(() => {
-    let interval;
-    if (isTraining && currentUser) {
-      interval = setInterval(() => {
-        setTrainingSamples(prev => {
-          const newTotal = prev + Math.floor(Math.random() * 50) + 10;
-          if (newTotal % 300 < 50) {
-            // Sync weights periodically
-            syncFLWeights(currentUser.uid, "v2.0.x", newTotal).catch(console.error);
-          }
-          return newTotal;
-        });
-      }, 5000); // simulate training step every 5 seconds
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isTraining, currentUser]);
 
   if (loading) {
     return (
@@ -179,17 +158,6 @@ export default function Profile() {
               </label>
             </div>
 
-            <div className="bg-slate-50 p-4 mt-4 rounded-xl border border-slate-100 flex justify-between items-center">
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Federated Learning (Edge Training)</p>
-                <p className="font-medium text-sm">Use local device to train crisis models privately</p>
-                {isTraining && <p className="text-xs text-green-600 font-medium mt-1 animate-pulse">Training active: {trainingSamples} samples processed</p>}
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" checked={isTraining} onChange={() => setIsTraining(!isTraining)} />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
-              </label>
-            </div>
           </div>
         </div>
       </div>

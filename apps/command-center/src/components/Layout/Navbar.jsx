@@ -28,7 +28,6 @@ export default function Navbar() {
       }
       if (isVolunteer) {
         baseLinks.push({ label: 'Profile', to: '/profile' });
-        baseLinks.push({ label: 'Alerts', to: '/alerts' });
       }
       baseLinks.push({ label: 'Missions', to: '/missions' });
     }

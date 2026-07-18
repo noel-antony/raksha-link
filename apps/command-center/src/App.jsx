@@ -7,9 +7,7 @@ import Matching from './pages/Matching';
 import MissionTracker from './pages/MissionTracker';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
-import Alerts from './pages/Alerts';
 import AdminSetup from './pages/AdminSetup';
-import ResilienceScore from './pages/ResilienceScore';
 import ManageAdmins from './pages/ManageAdmins';
 import { ToastProvider } from './hooks/useToast';
 import { AuthProvider } from './contexts/AuthContext';
@@ -58,16 +56,7 @@ export default function App() {
                   <Profile />
                 </ProtectedRoute>
               } />
-              <Route path="/alerts" element={
-                <ProtectedRoute requireVolunteer>
-                  <Alerts />
-                </ProtectedRoute>
-              } />
-              <Route path="/resilience" element={
-                <ProtectedRoute>
-                  <ResilienceScore />
-                </ProtectedRoute>
-              } />
+
             </Routes>
           </div>
         </BrowserRouter>

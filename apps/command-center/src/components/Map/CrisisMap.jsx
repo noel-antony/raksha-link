@@ -4,26 +4,15 @@ import 'leaflet/dist/leaflet.css';
 import { MOCK_VOLUNTEERS } from '../../config/mockData';
 import L from 'leaflet';
 
-const droneIcon = new L.Icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/512/2833/2833800.png', // Temporary drone icon URL
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
-});
 
-export default function CrisisMap({ crises = [], volunteers = [], selectedCrisis = null, floodData = null, drones = [], onDroneClick = null }) {
+
+export default function CrisisMap({ crises = [], volunteers = [], selectedCrisis = null }) {
   const visibleVolunteers = volunteers.length > 0 ? volunteers : MOCK_VOLUNTEERS;
   const activeCrisisCount = crises.filter((c) => c.status === 'active').length;
 
   const mapSummary = useMemo(() => {
-    const parts = [`${activeCrisisCount} active alerts`, `${visibleVolunteers.length} nearby responders`];
-    if (floodData?.risks?.length > 0) {
-      parts.push(`${floodData.risks.length} flood basin${floodData.risks.length > 1 ? 's' : ''} monitored`);
-    }
-    if (drones.length > 0) {
-      parts.push(`${drones.length} active drone${drones.length > 1 ? 's' : ''}`);
-    }
-    return parts.join(' · ');
-  }, [activeCrisisCount, visibleVolunteers.length, floodData]);
+    return [`${activeCrisisCount} active alerts`, `${visibleVolunteers.length} nearby responders`].join(' · ');
+  }, [activeCrisisCount, visibleVolunteers.length]);
 
   const defaultCenter = [10.0559, 76.6497];
 
@@ -41,29 +30,7 @@ export default function CrisisMap({ crises = [], volunteers = [], selectedCrisis
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {/* Flood basin zones */}
-        {floodData?.risks?.map((risk) =>
-          risk.gauge_stations?.map((gauge) => (
-            <Circle
-              key={`flood-${gauge.name}`}
-              center={[gauge.lat, gauge.lng]}
-              radius={800}
-              pathOptions={{
-                color: risk.risk_level === 'EXTREME' ? '#dc2626' : risk.risk_level === 'HIGH' ? '#2563eb' : '#16a34a',
-                fillColor: risk.risk_level === 'EXTREME' ? '#dc2626' : risk.risk_level === 'HIGH' ? '#2563eb' : '#16a34a',
-                fillOpacity: 0.08,
-                weight: 1.5,
-                dashArray: '4, 8',
-              }}
-            >
-              <Popup>
-                <strong>🌊 {gauge.name}</strong><br />
-                Capacity: {gauge.capacity_pct}%<br />
-                Risk: {risk.risk_level}
-              </Popup>
-            </Circle>
-          )),
-        )}
+
 
         {/* Draw 2km response radius around selected crisis */}
         {selectedCrisis && (
@@ -132,32 +99,7 @@ export default function CrisisMap({ crises = [], volunteers = [], selectedCrisis
           );
         })}
 
-        {/* Draw Drones */}
-        {drones.map((drone) => (
-          <CircleMarker
-            key={drone.drone_id}
-            center={[drone.lat, drone.lng]}
-            radius={8}
-            pathOptions={{ color: '#ffffff', weight: 2, fillColor: '#06b6d4', fillOpacity: 1 }}
-            eventHandlers={{
-              click: () => {
-                if (onDroneClick) onDroneClick(drone);
-              },
-            }}
-          >
-            <Popup>
-              <strong>🚁 {drone.drone_id}</strong><br />
-              Status: {drone.status}<br />
-              Battery: {drone.battery}%<br />
-              <button 
-                onClick={(e) => { e.stopPropagation(); if (onDroneClick) onDroneClick(drone); }}
-                className="mt-2 text-xs font-bold text-cyan-600 hover:text-cyan-800"
-              >
-                View Live Feed
-              </button>
-            </Popup>
-          </CircleMarker>
-        ))}
+
       </MapContainer>
 
       <div className="absolute left-6 top-6 rounded-2xl bg-white/95 px-4 py-3 shadow-card z-[1000]">
