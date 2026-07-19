@@ -5,7 +5,7 @@ Request and response schemas for volunteer-related endpoints.
 """
 
 import re
-from typing import Any, Optional, List
+from typing import, Optional, List
 from pydantic import BaseModel, Field, field_validator
 from api.models.volunteer import Availability, Status
 
@@ -72,3 +72,35 @@ class VolunteerResponse(BaseModel):
     status: Status
     createdAt: Optional[str] = None
     updatedAt: Optional[str] = None
+    certificate: Optional[dict] = None
+
+
+# ── Certificate Verification Schemas ────────────────────────────────────────
+
+class CertificateVerificationSchema(BaseModel):
+    """AI-generated verification result for a certificate."""
+    status: str = "Pending"
+    confidence: int = 0
+    holderName: str = ""
+    issuer: str = ""
+    certificateTitle: str = ""
+    skillCategory: str = ""
+    issueDate: str = ""
+    expiryDate: str = ""
+    certificateNumber: str = ""
+    summary: str = ""
+    possibleIssues: List[str] = []
+
+
+class CertificateDataSchema(BaseModel):
+    """Full certificate data stored on a volunteer document."""
+    uploaded: bool = False
+    fileUrl: str = ""
+    verification: Optional[CertificateVerificationSchema] = None
+    coordinatorApproved: Optional[bool] = None
+
+
+class CertificateReviewRequest(BaseModel):
+    """Schema for coordinator certificate review actions."""
+    action: str  # "approve", "reject", "request_reupload"
+

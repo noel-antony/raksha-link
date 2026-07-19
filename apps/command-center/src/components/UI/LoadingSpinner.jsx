@@ -1,13 +1,19 @@
-export default function LoadingSpinner({ label = 'Gemini AI is analyzing...' }) {
+import { Loader2 } from 'lucide-react';
+
+export default function LoadingSpinner({ 
+  label = 'Loading Operations Center...',
+  description = 'Connecting to RakshaLink core systems.' 
+}) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-primary-100 bg-white p-8 text-center shadow-card">
-      <div className="relative h-14 w-14">
-        <div className="absolute inset-0 animate-ping rounded-full bg-primary-100 opacity-70" />
-        <div className="absolute inset-2 animate-spin rounded-full border-4 border-primary-100 border-t-primary-500" />
-      </div>
-      <div>
-        <p className="font-heading text-lg font-semibold text-navy">{label}</p>
-        <p className="mt-1 text-sm text-slate-500">Signal fusion, prioritization, and response planning in progress.</p>
+    <div className="flex h-[calc(100vh-140px)] w-full items-center justify-center">
+      <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
+        <div className="relative h-12 w-12 text-primary-600">
+          <Loader2 className="h-full w-full animate-spin" />
+        </div>
+        <div>
+          <p className="font-heading text-lg font-semibold text-secondary-900">{label}</p>
+          <p className="mt-1 text-sm text-secondary-500 max-w-[250px] mx-auto">{description}</p>
+        </div>
       </div>
     </div>
   );

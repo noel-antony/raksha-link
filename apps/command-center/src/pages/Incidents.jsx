@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Activity, AlertTriangle, ShieldCheck, Clock, MapPin, ChevronRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Activity, AlertTriangle, ShieldCheck, Clock, MapPin, ChevronRight, Inbox } from 'lucide-react';
 import { api } from '../services/api';
 import Button from '../components/UI/Button';
+import Skeleton from '../components/UI/Skeleton';
+import EmptyState from '../components/UI/EmptyState';
+import Badge from '../components/UI/Badge';
 
 function timeAgo(dateString) {
   const diffMinutes = Math.max(1, Math.round((Date.now() - new Date(dateString).getTime()) / 60000));
@@ -14,6 +17,7 @@ function timeAgo(dateString) {
 }
 
 export default function Incidents() {
+  const navigate = useNavigate();
   const [incidents, setIncidents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,16 +39,31 @@ export default function Incidents() {
 
   if (loading) {
     return (
-      <div className="flex h-[calc(100vh-80px)] items-center justify-center">
-        <p className="text-secondary-500 animate-pulse">Loading incidents...</p>
-      </div>
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 animate-fade-in">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div className="space-y-3">
+            <Skeleton className="h-10 w-48" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <Skeleton className="h-10 w-40 rounded-xl" />
+        </div>
+        <div className="grid gap-6">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-40 w-full rounded-2xl" />)}
+        </div>
+      </main>
     );
   }
 
   if (error) {
     return (
-      <div className="flex h-[calc(100vh-80px)] items-center justify-center">
-        <p className="text-danger">{error}</p>
+      <div className="flex h-[calc(100vh-80px)] items-center justify-center px-4">
+        <EmptyState 
+          icon={AlertTriangle} 
+          title="Failed to load incidents" 
+          description={error} 
+          actionLabel="Try Again"
+          onAction={() => window.location.reload()}
+        />
       </div>
     );
   }
@@ -53,17 +72,20 @@ export default function Incidents() {
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-secondary">Incidents</h1>
+          <h1 className="text-3xl font-bold text-secondary-900">Incidents</h1>
           <p className="mt-2 text-secondary-500">Live feed of all reported emergencies and AI analysis.</p>
         </div>
-        <Button>Report New Incident</Button>
+        <Button onClick={() => navigate('/report')}>Report New Incident</Button>
       </div>
 
       <div className="grid gap-6">
         {incidents.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-card p-12 text-center text-secondary-500 shadow-sm">
-            No active incidents reported.
-          </div>
+          <EmptyState 
+            title="No active incidents" 
+            description="There are currently no emergencies reported in the system." 
+            actionLabel="Report Incident"
+            onAction={() => navigate('/report')}
+          />
         ) : (
           incidents.map((incident) => (
             <Link key={incident.id} to={`/incidents/${incident.id}`}>
@@ -71,17 +93,11 @@ export default function Incidents() {
                 <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
                   <div className="flex-1 space-y-4">
                     <div className="flex flex-wrap items-center gap-3">
-                      <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider ${
-                        incident.priority === 'Critical' ? 'bg-danger-100 text-danger' :
-                        incident.priority === 'High' ? 'bg-warning-100 text-warning' :
-                        'bg-secondary-100 text-secondary-700'
-                      }`}>
-                        {incident.priority === 'Critical' ? <AlertTriangle className="h-3 w-3" /> : <Activity className="h-3 w-3" />}
+                      <Badge color={incident.priority === 'Critical' ? 'danger' : incident.priority === 'High' ? 'warning' : 'secondary'}>
+                        {incident.priority === 'Critical' ? <AlertTriangle className="h-3 w-3 mr-1 inline" /> : <Activity className="h-3 w-3 mr-1 inline" />}
                         {incident.priority || 'Unassigned'} Priority
-                      </span>
-                      <span className="inline-flex items-center rounded-full bg-background border border-border px-3 py-1 text-xs font-medium text-secondary-600">
-                        {incident.category || 'Uncategorized'}
-                      </span>
+                      </Badge>
+                      <Badge color="secondary">{incident.category || 'Uncategorized'}</Badge>
                       <span className="flex items-center gap-1 text-sm text-secondary-400">
                         <Clock className="h-4 w-4" />
                         {timeAgo(incident.createdAt)}
@@ -100,7 +116,7 @@ export default function Incidents() {
                     <div className="flex flex-wrap items-center gap-4 text-sm text-secondary-500">
                       <div className="flex items-center gap-1.5">
                         <MapPin className="h-4 w-4" />
-                        <span>Lat {incident.location?.lat?.toFixed(4)}, Lng {incident.location?.lon?.toFixed(4)}</span>
+                        <span>Lat {incident.location?.lat?.toFixed(4)}, Lng {incident.location?.lng?.toFixed(4) || incident.location?.lon?.toFixed(4)}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <ShieldCheck className="h-4 w-4" />

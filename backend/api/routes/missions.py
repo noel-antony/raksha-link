@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/missions", tags=["Missions"])
 
 
-@router.post("/", response_model=MissionResponse, status_code=201)
+@router.post("", response_model=MissionResponse, status_code=201)
 async def create_mission_endpoint(payload: MissionCreate) -> dict:
     try:
         result = await create_mission(payload.model_dump())
@@ -28,7 +28,7 @@ async def create_mission_endpoint(payload: MissionCreate) -> dict:
         raise HTTPException(status_code=500, detail="Failed to create mission.") from exc
 
 
-@router.get("/", response_model=List[MissionResponse])
+@router.get("", response_model=List[MissionResponse])
 async def list_missions_endpoint(status: Optional[MissionStatus] = None, priority: Optional[str] = None) -> list:
     try:
         return await list_missions(status, priority)

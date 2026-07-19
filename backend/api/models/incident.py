@@ -4,7 +4,7 @@ RakshaLink API - Incident Model
 Pydantic model representing an incident document in Firestore.
 """
 
-from typing import Any, Optional
+from typing import, Optional
 from pydantic import BaseModel
 
 

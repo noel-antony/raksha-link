@@ -11,8 +11,19 @@ const fetchAPI = async (endpoint, options = {}) => {
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error || `API Error: ${response.status}`);
+    const errorText = await response.text();
+    let errorMessage = `API Error: ${response.status}`;
+    try {
+      const errorJson = JSON.parse(errorText);
+      if (errorJson.detail) {
+        errorMessage = typeof errorJson.detail === 'string' 
+          ? errorJson.detail 
+          : errorJson.detail[0]?.msg || 'Validation error occurred';
+      }
+    } catch {
+      errorMessage = errorText || errorMessage;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -53,5 +64,26 @@ export const api = {
   updateMissionStatus: (id, status) => fetchAPI(`/missions/${id}`, {
     method: 'PATCH',
     body: JSON.stringify({ status }),
+  }),
+
+  // Certificates
+  uploadCertificate: (volunteerId, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const url = `${API_URL}/volunteers/${volunteerId}/certificate`;
+    return fetch(url, {
+      method: 'POST',
+      body: formData,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const error = await res.text();
+        throw new Error(error || `Upload failed: ${res.status}`);
+      }
+      return res.json();
+    });
+  },
+  reviewCertificate: (volunteerId, action) => fetchAPI(`/volunteers/${volunteerId}/certificate/review`, {
+    method: 'PATCH',
+    body: JSON.stringify({ action }),
   }),
 };

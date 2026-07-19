@@ -5,7 +5,6 @@ Provides a lightweight health-check endpoint for uptime monitoring.
 """
 
 from fastapi import APIRouter, HTTPException
-from typing import Dict, Any
 from api.services.dashboard import get_health_status
 from api.schemas.dashboard import HealthResponse
 

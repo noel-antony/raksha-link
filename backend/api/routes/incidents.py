@@ -26,7 +26,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/incidents", tags=["Incidents"])
 
 
-@router.post("/", response_model=IncidentResponse, status_code=201)
+@router.post("", response_model=IncidentResponse, status_code=201)
 async def create_incident_endpoint(payload: IncidentCreate) -> dict:
     """Create a new incident report and automatically analyze it using Gemini.
 
@@ -90,7 +90,7 @@ async def create_incident_endpoint(payload: IncidentCreate) -> dict:
     return result
 
 
-@router.get("/", response_model=List[IncidentResponse])
+@router.get("", response_model=List[IncidentResponse])
 async def list_incidents_endpoint() -> list:
     """Return all incidents, newest first."""
     try:

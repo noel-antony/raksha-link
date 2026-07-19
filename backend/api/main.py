@@ -13,7 +13,9 @@ from api.routes.incidents import router as incidents_router
 from api.routes.volunteers import router as volunteers_router
 from api.routes.missions import router as missions_router
 from api.routes.dashboard import router as dashboard_router
-
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+import logging
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
@@ -38,6 +40,14 @@ def create_app() -> FastAPI:
     application.include_router(volunteers_router)
     application.include_router(missions_router)
     application.include_router(dashboard_router)
+
+    @application.exception_handler(RequestValidationError)
+    async def validation_exception_handler(request, exc):
+        logging.error(f"422 Validation Error: {exc.errors()} \nBody: {exc.body}")
+        return JSONResponse(
+            status_code=422,
+            content={"detail": exc.errors(), "body": exc.body}
+        )
 
     return application
 

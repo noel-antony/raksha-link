@@ -1,9 +1,7 @@
 from typing import Any, List, Optional
-from fastapi import HTTPException
 from firebase_admin import firestore
 from api.services.firebase import get_firestore
 from api.models.mission import MissionStatus, AssignmentStatus
-from api.schemas.mission import MissionCreate, MissionUpdate
 from datetime import datetime, timezone
 from api.models.volunteer import Availability, Status
 
@@ -94,7 +92,7 @@ async def list_missions(status: Optional[MissionStatus] = None, priority: Option
         
     docs = query.order_by("createdAt", direction=firestore.Query.DESCENDING).stream()
     
-    return [doc.to_dict() for doc in docs]
+    return [{"id": doc.id, **doc.to_dict()} for doc in docs]
 
 
 async def get_mission(mission_id: str) -> Optional[dict[str, Any]]:
@@ -104,7 +102,7 @@ async def get_mission(mission_id: str) -> Optional[dict[str, Any]]:
     if not doc.exists:
         return None
         
-    return doc.to_dict()
+    return {"id": doc.id, **doc.to_dict()}
 
 
 async def update_mission(mission_id: str, data: dict[str, Any]) -> Optional[dict[str, Any]]:

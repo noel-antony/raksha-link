@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import, List
 from api.services.firebase import get_firestore
 from api.schemas.dashboard import (
     DashboardResponse, DashboardStatistics, IncidentSummary, 
@@ -6,7 +6,6 @@ from api.schemas.dashboard import (
     HealthResponse, CollectionCounts
 )
 from datetime import datetime, timezone
-import os
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()

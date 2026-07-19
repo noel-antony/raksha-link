@@ -1,11 +1,14 @@
 import clsx from 'clsx';
 
-const variantMap = {
-  primary: 'bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-200',
-  secondary: 'bg-white text-navy border border-slate-200 hover:bg-slate-50 focus:ring-slate-200',
-  danger: 'bg-crisis-red text-white hover:bg-red-700 focus:ring-red-200',
-  ghost: 'bg-transparent text-slate-700 hover:bg-slate-100 focus:ring-slate-200',
-  success: 'bg-crisis-green text-white hover:bg-green-700 focus:ring-green-200',
+const baseStyles = 'inline-flex items-center justify-center gap-2 rounded-xl font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 active:scale-95 disabled:pointer-events-none disabled:opacity-50 disabled:active:scale-100';
+
+const variants = {
+  primary: 'bg-primary-700 text-white hover:bg-primary-600 hover:shadow-md border border-transparent',
+  secondary: 'bg-secondary-50 text-secondary-900 border border-border hover:bg-secondary-100 hover:border-secondary-200',
+  outline: 'border-2 border-border bg-transparent text-secondary-900 hover:border-secondary-900 hover:bg-secondary-50',
+  ghost: 'bg-transparent text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900',
+  danger: 'bg-danger text-white hover:bg-danger/90 hover:shadow-md border border-transparent',
+  success: 'bg-accent-700 text-white hover:bg-accent hover:shadow-md border border-transparent',
 };
 
 export default function Button({
@@ -21,21 +24,21 @@ export default function Button({
     size === 'sm'
       ? 'px-3 py-2 text-sm'
       : size === 'lg'
-        ? 'px-5 py-3 text-base'
+        ? 'px-6 py-3.5 text-base'
         : 'px-4 py-2.5 text-sm';
 
   return (
     <button
       className={clsx(
-        'inline-flex items-center justify-center gap-2 rounded-xl font-medium shadow-sm transition-all duration-200 ease-smooth focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-60',
-        variantMap[variant],
+        baseStyles,
+        variants[variant] || variants.primary,
         sizeClasses,
         className,
       )}
       disabled={disabled || loading}
       {...props}
     >
-      {loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
+      {loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent opacity-70" />}
       {children}
     </button>
   );

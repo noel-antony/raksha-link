@@ -4,7 +4,7 @@ RakshaLink API - Volunteer Model
 Pydantic model representing a volunteer document in Firestore.
 """
 
-from typing import Any, Optional, List
+from typing import, Optional, List
 from pydantic import BaseModel
 from enum import Enum
 

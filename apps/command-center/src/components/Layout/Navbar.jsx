@@ -9,23 +9,18 @@ export default function Navbar() {
 
   const links = [
     { label: 'Home', to: '/' },
-    { label: 'Incidents', to: '/incidents' },
-    { label: 'Volunteers', to: '/volunteers' },
-    { label: 'Missions', to: '/missions' },
+    { label: 'Report Incident', to: '/report' },
+    { label: 'Volunteer', to: '/register' },
     { label: 'Dashboard', to: '/dashboard' },
+    { label: 'About', to: '/about' },
   ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur shadow-sm">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-white shadow-card">
-            <ShieldCheck className="h-6 w-6" />
-          </div>
-          <div>
-            <p className="font-heading text-lg font-bold text-secondary">RakshaLink</p>
-            <p className="text-xs text-secondary-500">Disaster Response Platform</p>
-          </div>
+          <img src="/logo-icon.png" alt="RakshaLink Shield" className="h-14 w-auto mix-blend-multiply" />
+          <img src="/logo-text.png" alt="RakshaLink Text" className="h-14 w-auto mix-blend-multiply hidden sm:block" />
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
@@ -34,17 +29,12 @@ export default function Navbar() {
               key={link.to}
               to={link.to}
               className={({ isActive }) =>
-                `text-sm font-medium transition-colors ${isActive ? 'text-primary-600' : 'text-secondary-500 hover:text-secondary-900'}`
+                `text-base font-medium transition-colors ${isActive ? 'text-primary-600' : 'text-secondary-500 hover:text-secondary-900'}`
               }
             >
               {link.label}
             </NavLink>
           ))}
-          <Link to="/dashboard">
-            <Button size="sm" variant="secondary" className="ml-4">
-              Coordinator Login
-            </Button>
-          </Link>
         </nav>
 
         <button
@@ -65,18 +55,13 @@ export default function Navbar() {
                 key={link.to}
                 to={link.to}
                 onClick={() => setOpen(false)}
-                className={`rounded-xl px-3 py-2 text-sm font-medium ${
+                className={`rounded-xl px-3 py-2 text-base font-medium ${
                   location.pathname === link.to ? 'bg-primary-50 text-primary-700' : 'text-secondary-500'
                 }`}
               >
                 {link.label}
               </Link>
             ))}
-            <Link to="/dashboard" onClick={() => setOpen(false)} className="mt-2">
-              <Button size="sm" variant="secondary" className="w-full">
-                Coordinator Login
-              </Button>
-            </Link>
           </div>
         </div>
       )}
